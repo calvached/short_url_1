@@ -4,7 +4,7 @@ get '/' do
 end
 
 post '/' do
-  url = Url.create(url: params[:url])
+  url = Url.find_or_create_by!(url: params[:url])
 
   # url = Ur.new(url: params[:url])
   # url will be an object with a url property on it
@@ -19,19 +19,18 @@ end
 
 get '/generated/:short_url' do
   url = Url.find_by(short_url: params[:short_url])
+  @count = url.click_count
   @sh_url = url.short_url
   erb :generated
 end
 
-
-
 get '/:some_url' do
-  p params
   url = Url.find_by(short_url: params[:some_url])
-  redirect "http://#{url.url}"
-    # Get previous counter number and add our new counter
-# url[:url]
-# url[:click_count] == 0
-#     @counter =+ 1
-# url.update(click_count: 2)
+  if url
+    url.click_count += 1
+    url.save
+    redirect "http://#{url.url}"
+  else
+    'This url does not exist, fool!'
+  end
 end
